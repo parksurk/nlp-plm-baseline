@@ -171,4 +171,4 @@ runs/
 wandb/
 
 .checkpoints/
-models/
+*.pth
