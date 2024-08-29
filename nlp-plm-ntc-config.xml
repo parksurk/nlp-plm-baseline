@@ -1,0 +1,27 @@
+adam_epsilon: 1.0e-08
+batch_size: 80
+drop_cnn: true
+drop_rnn: true
+gpu_id: -1
+lr: 5.0e-05
+max_length: 100
+model_fn: ./models/review.native.kcbert.pth
+n_epochs: 1
+pretrained_model_name: beomi/kcbert-base
+top_k: 1
+train_fn: ./data/review.sorted.uniq.refined.shuf.train.tsv
+use_albert: false
+use_radam: false
+valid_ratio: 0.2
+verbose: 2
+wandb:
+  entity: oompulab
+  log_model: false
+  name: review.native.kcbert.run.01
+  notes: Native kcbert Experiment notes
+  project: LP-PLM-baseline
+  save_code: false
+  tags:
+  - native.kcber
+  - adam
+warmup_ratio: 0.2
