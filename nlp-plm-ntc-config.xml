@@ -19,7 +19,7 @@ wandb:
   log_model: false
   name: review.native.kcbert.run.01
   notes: Native kcbert Experiment notes
-  project: LP-PLM-baseline
+  project: NLP-PLM-baseline
   save_code: false
   tags:
   - native.kcber
