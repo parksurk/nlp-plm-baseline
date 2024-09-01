@@ -14,9 +14,9 @@ class TextClassificationCollator():
         labels = [s['label'] for s in samples]
 
         # Debugging prints
-        print(f"Processing batch with {len(texts)} samples.")
-        for i, text in enumerate(texts):
-            print(f"Sample {i}: {text[:50]}...")  # Print first 50 chars of the text for checking
+        # print(f"Processing batch with {len(texts)} samples.")
+        # for i, text in enumerate(texts):
+        #     print(f"Sample {i}: {text[:50]}...")  # Print first 50 chars of the text for checking
 
 
         encoding = self.tokenizer(
