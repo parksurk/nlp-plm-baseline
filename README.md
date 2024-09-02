@@ -1,11 +1,93 @@
 # NLP PLM Baseline Code 
 
-## Text Classification - 상품리뷰에 에 대한 긍정/부정 분석(Positive Negative)
+<!-- TOC -->
+
+- 1. Text Classification - 상품리뷰에 대한 긍정/부정 분석(Positive Negative)
+    - 1.1. 사전 요구 사항
+    - 1.2. 설치
+        - 1.2.1. 로컬PC Python 가상환경 설정
+        - 1.2.2. Colab 설정
+    - 1.3. 사용 방법
+        - 1.3.1. 준비
+            - 1.3.1.1. 형식
+            - 1.3.1.2. 토크나이징(선택 사항)
+            - 1.3.1.3. 셔플 및 학습/검증 세트 분할
+        - 1.3.2. 학습
+            - 1.3.2.1. 뉴럴네트워크가 RNN, CNN 일때 학습을 위한 예제 명령어
+            - 1.3.2.2. PLM 기반 Trainer를 커스터마이징할 수 있는 코드를 학습을 위한 예제 명령어
+            - 1.3.2.3. PLM 기반 Trainer를 Hugging Face Transformer Trainer를 사용 하는 코드를 학습을 위한 예제 명령어
+    - 1.4. 추론
+        - 1.4.1. 뉴럴네트워크가 RNN, CNN 일때 추론을 위한 예제 명령어
+        - 1.4.2. PLM 기반 Trainer를 커스터마이징할 수 있는 코드를 학습을 위한 예제 명령어
+        - 1.4.3. PLM 기반 Trainer를 Hugging Face Transformer Trainer를 사용 하는 코드를 학습을 위한 예제 명령어
+    - 1.5. 평가
+    - 1.6. Original 저자
+    - 1.7. 참고 문헌
+- 2. Chat Summarization
+    - 2.1. 패키지 설치
+    - 2.2. 설정 파일(config.yaml)
+        - 2.2.1. `general` 섹션
+        - 2.2.2. `inference` 섹션
+        - 2.2.3. `tokenizer` 섹션
+        - 2.2.4. `training` 섹션
+        - 2.2.5. .
+        - 2.2.6. 설정 파일을 통해 할 수 있는 일:
+    - 2.3. dataset.py
+        - 2.3.1. 주요 클래스 및 함수 설명
+    - 2.4. 소스 및 디렉토리 구조
+        - 2.4.1. Lightening 기반 학습/예측 관련 소스 
+        - 2.4.2. Ingite 기반 학습/예측 관련 소스 
+    - 2.5. 학습 테스트 관련 커맨드 라인 명령어
+        - 2.5.1. Lightening 기반 학습
+        - 2.5.2. Lightening 기반 예측
+        - 2.5.3. Ignite 기반 학습
+        - 2.5.4. Ignite 기반 예측
+    - 2.6. Lightening 대신 Ignite 적용 관련
+        - 2.6.1. 학습 소스 변경
+            - 2.6.1.1. 주요 변경 사항 설명
+        - 2.6.2. 예측 소스 변경
+            - 2.6.2.1. 주요 변경 사항 설명
+    - 2.7. Ignite로 변환된 소스에 WandB 추가 설정 
+        - 2.7.1. 추가된 기능 설명:
+        - 2.7.2. 실행 시 `wandb` 대시보드에서 다음과 같은 정보를 확인할 수 있습니다:
+            - 2.7.2.1. 추가된 `ROUGE` 메트릭 모니터링 기능 설명:
+            - 2.7.2.2. 이 코드의 결과:
+    - 2.8. Ignite로 변환된 소스에 체크포인트 관련 추가 코딩 
+        - 2.8.1. Seq2SeqTrainer의 체크포인트 관리
+    - 2.9. Stage server에서 실험 진행 순서
+        - 2.9.1. 체크포인트 경로 확인
+        - 2.9.2. 모델 로딩 오류 해결
+        - 2.9.3. Lightening 기반 학습 및 추론 진행
+        - 2.9.4. Ignite 기반 학습 및 추론 진행
+        - 2.9.5. 결과 확인 및 로깅
+        - 2.9.6. 성능 평가 및 튜닝
+        - 2.9.7. 요약
+    - 2.10. Early Stopping 관련
+        - 2.10.1. Early Stopping의 동작 원리
+            - 2.10.1.1. 주요 매개변수:
+        - 2.10.2. Early Stopping이 동작하는 예시
+        - 2.10.3. Early Stopping 결론
+    - 2.11. Ignite를 활용한 커스마이징 범위 정리
+        - 2.11.1. `ignite_trainer`와 `ignite_evaluator` 커스터마이징:
+        - 2.11.2. 이벤트 핸들러를 통한 커스터마이징
+            - 2.11.2.1. 에포크 완료 시 로직 (`EPOCH_COMPLETED` 이벤트)
+            - 2.11.2.2. `iteration` 완료 시 로직 (`ITERATION_COMPLETED` 이벤트)
+            - 2.11.2.3. 평가 완료 시 로직 (`COMPLETED` 이벤트)
+        - 2.11.3. Ignite를 활용한 커스마이징 요약:
+    - 2.12. Hugging Faces Transformers 가 제공하는 Seq2SeqTrainer 커스마징 범위
+        - 2.12.1. 필요한 모듈 불러오기
+        - 2.12.2. 모델 및 데이터 로드
+        - 2.12.3. Ignite 기반 학습 및 평가 루프 구현
+        - 2.12.4. 학습 과정 설정
+        - 2.12.5. 핵심 커스터마이징 사항
+
+<!-- /TOC -->
+
+## 1. Text Classification - 상품리뷰에 대한 긍정/부정 분석(Positive Negative)
 
 이 저장소에는 순환 신경망(LSTM)과 합성곱 신경망(CNN)을 사용한 단순한 텍스트 분류의 구현이 포함되어 있습니다([Kim 2014](http://arxiv.org/abs/1408.5882) 참조). 학습할 아키텍처를 지정해야 하며, 두 가지를 모두 선택할 수 있습니다. 두 아키텍처를 모두 선택하여 문장을 분류하면 단순 평균으로 앙상블 추론이 이루어집니다.
 
-
-### 사전 요구 사항
+### 1.1. 사전 요구 사항
 
 - Python 3.6 이상
 - PyTorch 1.6 이상
@@ -22,9 +104,9 @@ BERT 파인튜닝을 사용하려면 다음도 필요할 수 있습니다.
 - SKlearn
 - WandB
 
-### 설치
+### 1.2. 설치
 
-#### 로컬PC Python 가상환경 설정
+#### 1.2.1. 로컬PC Python 가상환경 설정
 conda 환경을 새로 생성한 후 필요한 라이브러리를 설치합니다.
 
 ```bash
@@ -38,7 +120,8 @@ conda install -c conda-forge transformers
 pip install scikit-learn
 pip install wandb
 ```
-#### Colab 설정
+
+#### 1.2.2. Colab 설정
 ```bash
 
 # PyTorch 및 관련 패키지 설치
@@ -61,11 +144,11 @@ pip install wandb
 
 ```
 
-### 사용 방법
+### 1.3. 사용 방법
 
-#### 준비
+#### 1.3.1. 준비
 
-##### 형식
+##### 1.3.1.1. 형식
 
 입력 파일은 클래스와 문장 두 개의 열로 구성되며, 이 열들은 탭으로 구분됩니다. 클래스는 숫자가 아니어도 되며, 공백 없이 단어로 작성될 수 있습니다. 아래는 예제 코퍼스입니다.
 
@@ -83,7 +166,7 @@ positive	13개월 아가 제일좋은 간식이네요
 positive	지인추천으로 샀어요~ 싸고 가성비 좋다해서 낮기저귀로 써보려구요~
 ```
 
-##### 토크나이징(선택 사항)
+##### 1.3.1.2. 토크나이징(선택 사항)
 
 코퍼스의 문장을 토크나이징해야 할 수 있습니다. 언어에 따라 자신에게 맞는 토크나이저를 선택해야 합니다(예: 한국어의 경우 Mecab).
 
@@ -94,7 +177,7 @@ $ paste ./data/tmp_class.txt ./data/tmp.txt > ./data/corpus.txt
 $ rm ./data/tmp.txt ./data/tmp_class.txt
 ```
 
-##### 셔플 및 학습/검증 세트 분할
+##### 1.3.1.3. 셔플 및 학습/검증 세트 분할
 
 적절한 형식화와 토크나이징 후에는 코퍼스를 학습 세트와 검증 세트로 분할해야 합니다.
 
@@ -113,23 +196,23 @@ $ tail -n 240000 ./data/corpus.shuf.txt > ./data/corpus.train.txt
 
 이제 240,000개의 학습 세트 샘플과 62,680개의 검증 세트 샘플이 있습니다. MacOS를 사용하는 경우, 'shuf' 대신 'rl' 명령어를 사용할 수 있습니다.
 
-#### 학습
+#### 1.3.2. 학습
 
 아래는 학습을 위한 예제 명령어입니다. 하이퍼파라미터 값은 인수 입력을 통해 자신만의 값을 선택할 수 있습니다.
 
-##### 뉴럴네트워크가 RNN, CNN 일때 학습을 위한 예제 명령어
+##### 1.3.2.1. 뉴럴네트워크가 RNN, CNN 일때 학습을 위한 예제 명령어
 
 ```bash
 python train.py --config_path nlp-plm-ntc-config.xml 
 ```
 
-##### PLM 기반 Trainer를 커스터마이징할 수 있는 코드를 학습을 위한 예제 명령어
+##### 1.3.2.2. PLM 기반 Trainer를 커스터마이징할 수 있는 코드를 학습을 위한 예제 명령어
 
 ```bash
 python finetune_plm_native.py --config_path nlp-plm-ntc-config.xml 
 ```
 
-##### PLM 기반 Trainer를 Hugging Face Transformer Trainer를 사용 하는 코드를 학습을 위한 예제 명령어
+##### 1.3.2.3. PLM 기반 Trainer를 Hugging Face Transformer Trainer를 사용 하는 코드를 학습을 위한 예제 명령어
 
 ```bash
 python finetune_plm_hftrainer.py --config_path nlp-plm-ntc-config-hftrainer.xml 
@@ -137,14 +220,13 @@ python finetune_plm_hftrainer.py --config_path nlp-plm-ntc-config-hftrainer.xml
 
 학습을 위해 아키텍처를 지정해야 합니다. 앙상블 방법을 위해 rnn과 cnn을 모두 선택할 수 있습니다. 또한, 학습에 사용할 장치를 선택할 수 있습니다. CPU만 사용하려면 '--gpu_id' 인수에 기본값인 -1을 입력하면 됩니다.
 
-
 nlp-plm-ntc-config.xml 에서 기본 하이퍼파라미터를 확인할 수 있습니다.
 
-#### 추론
+### 1.4. 추론
 
 아래와 같이 표준 입력을 추론 입력으로 사용할 수 있습니다. 예측 결과는 탭으로 구분된 두 개의 열(상위 k개의 클래스 및 입력 문장)로 구성됩니다. 결과는 표준 출력으로 표시됩니다.
 
-##### 뉴럴네트워크가 RNN, CNN 일때 추론을 위한 예제 명령어
+#### 1.4.1. 뉴럴네트워크가 RNN, CNN 일때 추론을 위한 예제 명령어
 
 ```bash
 $ head ./data/review.sorted.uniq.refined.tok.shuf.test.tsv | awk -F'\t' '{ print $2 }' | python classify.py --config_path nlp-plm-ntc-config.xml 
@@ -157,11 +239,13 @@ positive	빠르 고 괜찬 습니다 .
 positive	유통 기한 도 넉넉 하 고 좋 아요
 positive	좋 은 가격 에 좋 은 상품 잘 쓰 겠 습니다 .
 negative	사이트 에서 늘 생리대 사 서 쓰 는데 오늘 처럼 이렇게 비닐 에 포장 되 어 받 아 본 건 처음 입니다 . 위생 용품 이 고 자체 도 비닐 포장 이 건만 소형 박스 에 라도 넣 어 보내 주 시 지 . ..
-negative	연결 부분 이 많이 티 가 납니다 . 재질 구김 도 좀 있 습니다 .
+negative	연결 부분 이 많이 티 가
+
+ 납니다 . 재질 구김 도 좀 있 습니다 .
 positive	애기 태열 때문 에 구매 해서 잘 쓰 고 있 습니다 .
 ```
 
-##### PLM 기반 Trainer를 커스터마이징할 수 있는 코드를 학습을 위한 예제 명령어
+#### 1.4.2. PLM 기반 Trainer를 커스터마이징할 수 있는 코드를 학습을 위한 예제 명령어
 
 ```bash
 $ head ./data/review.sorted.uniq.refined.tok.shuf.test.tsv | awk -F'\t' '{ print $2 }' | python classify_plm.py --config_path nlp-plm-ntc-config.xml 
@@ -177,18 +261,16 @@ negative	사이트 에서 늘 생리대 사 서 쓰 는데 오늘 처럼 이렇�
 negative	연결 부분 이 많이 티 가 납니다 . 재질 구김 도 좀 있 습니다 .
 positive	애기 태열 때문 에 구매 해서 잘 쓰 고 있 습니다 .
 ```
-##### PLM 기반 Trainer를 Hugging Face Transformer Trainer를 사용 하는 코드를 학습을 위한 예제 명령어
+
+#### 1.4.3. PLM 기반 Trainer를 Hugging Face Transformer Trainer를 사용 하는 코드를 학습을 위한 예제 명령어
 
 ```bash
 상동
 ```
 
-
-
 nlp-plm-ntc-config.xml 에서 기본 하이퍼파라미터를 확인할 수 있습니다.
 
-
-### 평가
+### 1.5. 평가
 
 저는 코퍼스를 학습 세트와 검증 세트로 분할했습니다. 학습 세트는 240,000줄, 검증 세트는 62,680줄로 샘플링되었습니다. 아키텍처 스냅샷은 아래와 같습니다. 하이퍼파라미터 최적화를 통해 성능을 향상시킬 수 있습니다.
 
@@ -235,7 +317,7 @@ CNNClassifier(
 |Bi-LSTM + CNN|0.9142|
 |KcBERT|0.9598|
 
-### Original 저자
+### 1.6. Original 저자
 
 |이름|김기현|
 |-|-|
@@ -243,16 +325,17 @@ CNNClassifier(
 |깃허브|https://github.com/kh-kim/|
 |링크드인|https://www.linkedin.com/in/ki-hyun-kim/|
 
-### 참고 문헌
+### 1.7. 참고 문헌
 
 - Kim, Convolutional neural networks for sentence classification, EMNLP, 2014
 - Devlin et al., BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding, ACL, 2019
 - [Lee, KcBERT: Korean comments BERT, GitHub, 2020](https://github.com/Beomi/KcBERT)
 
+---
 
-## Chat Summarization
+## 2. Chat Summarization
 
-### 패키지 설치
+### 2.1. 패키지 설치
 
 ```bash
 pip install torch torchvision torchaudio
@@ -267,15 +350,16 @@ pip install nltk
 pip install rouge-score
 ```
 
-### 설정 파일(config.yaml)
+### 2.2. 설정 파일(config.yaml)
+
 `config.yaml` 파일은 모델 학습 및 추론을 위한 설정 파일로 보입니다. 설정 파일의 각 섹션이 의미하는 바를 간단히 설명하겠습니다.
 
-#### 1. `general` 섹션
+#### 2.2.1. `general` 섹션
 - **data_path**: 데이터가 저장된 경로를 지정합니다.
 - **model_name**: 사용할 사전 학습된 모델의 이름입니다. 여기서는 `digit82/kobart-summarization` 모델을 사용합니다.
 - **output_dir**: 결과 파일이 저장될 디렉토리를 지정합니다.
 
-#### 2. `inference` 섹션
+#### 2.2.2. `inference` 섹션
 - **batch_size**: 추론 시 사용할 배치 크기입니다.
 - **ckt_path**: 저장된 체크포인트 파일 경로입니다.
 - **early_stopping**: 조기 종료를 사용할지 여부를 설정합니다.
@@ -285,14 +369,14 @@ pip install rouge-score
 - **remove_tokens**: 추론 시 제거할 토큰 리스트입니다.
 - **result_path**: 예측 결과가 저장될 경로입니다.
 
-#### 3. `tokenizer` 섹션
+#### 2.2.3. `tokenizer` 섹션
 - **bos_token**: 문장의 시작 토큰입니다.
 - **decoder_max_len**: 디코더에서 사용되는 최대 입력 길이입니다.
 - **encoder_max_len**: 인코더에서 사용되는 최대 입력 길이입니다.
 - **eos_token**: 문장의 끝을 나타내는 토큰입니다.
 - **special_tokens**: 추가적인 특별 토큰 리스트입니다.
 
-#### 4. `training` 섹션
+#### 2.2.4. `training` 섹션
 - **do_eval**: 평가를 수행할지 여부입니다.
 - **do_train**: 학습을 수행할지 여부입니다.
 - **early_stopping_patience**: 조기 종료를 위한 인내 횟수입니다.
@@ -319,19 +403,21 @@ pip install rouge-score
 - **warmup_ratio**: 학습률 워밍업 비율입니다.
 - **weight_decay**: 가중치 감소 값을 설정합니다.
 
-#### 5. `wandb` 섹션
+#### 2.2.5. .
+
+2.5. `wandb` 섹션
 - **entity**: WandB 프로젝트 엔티티 이름입니다.
 - **name**: 이번 실험의 이름입니다.
 - **project**: 실험이 속한 프로젝트 이름입니다.
 
-#### 설정 파일을 통해 할 수 있는 일:
+#### 2.2.6. 설정 파일을 통해 할 수 있는 일:
 이제 이 설정 파일을 사용하여 모델 학습 또는 추론을 실행하거나, 설정을 수정하여 실험을 진행할 수 있습니다. 예를 들어, 배치 크기, 학습률, 에폭 수 등과 같은 하이퍼파라미터를 조정하거나, 로깅 및 체크포인트 저장 옵션을 변경할 수 있습니다.
 
+### 2.3. dataset.py
 
-### dataset.py
 `chat_summarization’ 디렉토리 하위에 ‘dataset.py` 파일은 모델 학습 및 평가를 위한 데이터 준비와 관련된 여러 가지 작업을 수행하는 스크립트입니다. 주요 클래스와 함수들의 역할을 요약해 드리겠습니다.
 
-#### 주요 클래스 및 함수 설명
+#### 2.3.1. 주요 클래스 및 함수 설명
 
 1. **Preprocess 클래스**
    - `__init__`: 시작 및 끝 토큰을 초기화합니다.
@@ -366,9 +452,9 @@ pip install rouge-score
    - 모델 예측값과 실제 라벨을 비교하여 성능을 평가합니다.
    - Rouge 점수를 계산하여 요약 성능을 측정하며, 필요에 따라 특정 토큰을 제거한 후 점수를 계산합니다.
 
-### 소스 및 디렉토리 구조
+### 2.4. 소스 및 디렉토리 구조
 
-#### Lightening 기반 학습/예측 관련 소스 
+#### 2.4.1. Lightening 기반 학습/예측 관련 소스 
 
 project_root/
 │
@@ -378,8 +464,7 @@ project_root/
 └── chat_summarization/
     └── dataset.py
 
-
-#### Ingite 기반 학습/예측 관련 소스 
+#### 2.4.2. Ingite 기반 학습/예측 관련 소스 
 
 project_root/
 │
@@ -389,41 +474,41 @@ project_root/
 └── chat_summarization/
     └── dataset.py
 
-### 학습 테스트 관련 커맨드 라인 명령어
+### 2.5. 학습 테스트 관련 커맨드 라인 명령어
 
-
-#### Lightening 기반 학습
+#### 2.5.1. Lightening 기반 학습
 
 ```bash
 python training-plm-summarization-lightening.py --config config.yaml
 ```
 
-#### Lightening 기반 예측
+#### 2.5.2. Lightening 기반 예측
 
 ```bash
 python inference-plm-summarization-lightening.py --config config.yaml
 ```
 
-#### Ignite 기반 학습
+#### 2.5.3. Ignite 기반 학습
 
 ```bash
 python training-plm-summarization-ignite.py --config config-plm-ignite.yaml
 ```
 
-#### Ignite 기반 예측
+#### 2.5.4. Ignite 기반 예측
+
 ```bash
 python inference-plm-summarization-ignite.py --config config-plm-ignite.yaml
 ```
 
+### 2.6. Lightening 대신 Ignite 적용 관련
 
-### lightening 대신 ignite 적용 관련
+#### 2.6.1. 학습 소스 변경
 
-#### 학습 소스 변경
 PyTorch-Ignite는 PyTorch 프로젝트의 학습과 평가를 더 쉽게 관리할 수 있도록 도와주는 고수준 라이브러리입니다. 아래는 `training-plm-summarization-lightening.py`를 Ignite 기반으로의 적용과 관련된 내용입니다.
 
-Ignite를 사용하여 트레이닝 루프를 작성하고, 특히 `ignite.engine.Engine`과 `ignite.engine.Events`, `ignite.metrics`를 사용하여 학습 및 평가 절차를 간소화합니다. 
+Ignite를 사용하여 트레이닝 루프를 작성하고, 특히 `ignite.engine.Engine`과 `ignite.engine.Events`, `ignite.metrics`를 사용하여 학습 및 평가 절차를 간소화합니다.
 
-##### 주요 변경 사항 설명
+##### 2.6.1.1. 주요 변경 사항 설명
 
 1. **Engine 및 이벤트 사용**: 
    - Ignite의 `Engine`을 사용하여 학습 및 평가 루프를 정의했습니다.
@@ -443,11 +528,11 @@ Ignite를 사용하여 트레이닝 루프를 작성하고, 특히 `ignite.engin
 
 이제 이 코드로 PyTorch-Ignite를 사용해 모델을 학습할 수 있습니다. Ignite는 PyTorch와 자연스럽게 통합되며, 학습 루프를 유연하게 구성할 수 있도록 돕습니다.
 
+#### 2.6.2. 예측 소스 변경
 
-#### 예측 소스 변경
 아래는 PyTorch-Ignite를 사용하여 `inference-plm-summarization-lightening.py`를 변환과 관련된 내용입니다. Ignite는 학습뿐만 아니라 추론 과정도 관리할 수 있습니다.
 
-#### 주요 변경 사항 설명
+##### 2.6.2.1. 주요 변경 사항 설명
 
 1. **Engine 및 이벤트 사용**: 
    - Ignite의 `Engine`을 사용하여 추론 단계를 정의했습니다. `Engine`은 입력 데이터를 받아서 모델을 통해 예측을 수행하는 단계를 관리합니다.
@@ -464,11 +549,12 @@ Ignite를 사용하여 트레이닝 루프를 작성하고, 특히 `ignite.engin
 
 이 코드를 사용하여 Ignite를 기반으로 모델 추론을 수행할 수 있습니다. Ignite는 간단한 API로 모델 학습 및 추론 절차를 쉽게 관리할 수 있게 해줍니다.
 
+### 2.7. Ignite로 변환된 소스에 WandB 추가 설정 
 
-### Ignite로 변환된 소스에 WandB 추가 설정 
 `PyTorch-Ignite`를 사용하여 `WandB`에서 다양한 학습 메트릭을 모니터링할 수 있도록 코드를 수정했습니다. 아래는 당신이 제안한 항목들을 모니터링할 수 있도록 코드에 추가한 내용입니다.
 
-#### 추가된 기능 설명:
+#### 2.7.1. 추가된 기능 설명:
+
 1. **훈련 및 검증 손실**:
    - `RunningAverage` 메트릭을 통해 각 에폭마다 `training_loss`와 `validation_loss`를 계산하고, `wandb.log`를 사용해 기록합니다.
 
@@ -479,22 +565,22 @@ Ignite를 사용하여 트레이닝 루프를 작성하고, 특히 `ignite.engin
    - `Events.ITERATION_COMPLETED` 이벤트에 러닝 레이트를 추적하여 `wandb`에 기록합니다.
 
 4. **그래디언트**:
-   - 각 레이어의 그래디언트를 추적하여, 해당 값을 `wandb.log`를 통해 기록합니다. 이 작업은 `Events.ITERATION_COMPLETED`에서 수행됩니다.
+   - 각 레이어의 그래디언트를 추적하여, 해당 값을 `wandb.log`를 통해 기록합니다. 이 작업은 `Events.ITERATION_COMPLE
+
+TED`에서 수행됩니다.
 
 5. **메트릭**:
    - 사용자 정의 메트릭(예: `Rouge` 스코어 등)이 있다면, 추가적으로 계산하여 `wandb`에 로그할 수 있습니다.
 
-#### 실행 시 `wandb` 대시보드에서 다음과 같은 정보를 확인할 수 있습니다:
+#### 2.7.2. 실행 시 `wandb` 대시보드에서 다음과 같은 정보를 확인할 수 있습니다:
 - 각 에폭마다의 훈련 및 검증 손실
 - 학습 과정에서 러닝 레이트의 변화
 - 그래디언트의 변화
 - 기타 원하는 메트릭
 
-이렇게 설정된 코드는 `PyTorch Lightning` 수준의 모니터링 기능을 `WandB`에 통합하여, 학습 과정의 세부적인 정보를 추적하고 분석할 수 있습니다.
-`Rouge` 메트릭은 텍스트 요약과 같은 작업에서 자주 사용됩니다. 이를 모니터링하기 위해서는 `ignite`의 `Engine`을 활용하여 평가 과정에서 `Rouge` 점수를 계산하고, `wandb`에 로그하는 부분을 추가해야 합니다.
+이렇게 설정된 코드는 `PyTorch Lightning` 수준의 모니터링 기능을 `WandB`에 통합하여, 학습 과정의 세부적인 정보를 추적하고 분석할 수 있습니다. `Rouge` 메트릭은 텍스트 요약과 같은 작업에서 자주 사용됩니다. 이를 모니터링하기 위해서는 `ignite`의 `Engine`을 활용하여 평가 과정에서 `Rouge` 점수를 계산하고, `wandb`에 로그하는 부분을 추가해야 합니다.
 
-
-#### 추가된 `ROUGE` 메트릭 모니터링 기능 설명:
+##### 2.7.2.1. 추가된 `ROUGE` 메트릭 모니터링 기능 설명:
 
 1. **ROUGE 메트릭 로드**:
    - `datasets` 라이브러리에서 `load_metric("rouge")`를 사용해 `ROUGE` 메트릭을 로드합니다.
@@ -506,15 +592,14 @@ Ignite를 사용하여 트레이닝 루프를 작성하고, 특히 `ignite.engin
 3. **WandB에 ROUGE 점수 로그**:
    - 계산된 `ROUGE-1`, `ROUGE-2`, `ROUGE-L`의 F-1 점수를 `wandb.log`를 사용하여 기록합니다.
 
-#### 이 코드의 결과:
+##### 2.7.2.2. 이 코드의 결과:
 - **WandB 대시보드**에서 `ROUGE` 점수와 더불어 훈련 및 검증 손실, 러닝 레이트, 그래디언트 등 다양한 메트릭을 실시간으로 모니터링할 수 있습니다. 이로써, `PyTorch Lightning` 수준의 모니터링을 `Ignite`와 `WandB`를 사용해 구현할 수 있습니다.
 
-
-### Ignite로 변환된 소스에 체크포인트 관련 추가 코딩 
+### 2.8. Ignite로 변환된 소스에 체크포인트 관련 추가 코딩 
 
 현재 제공된 코드는 `Seq2SeqTrainer`를 사용하여 모델을 학습하고 있으며, `Seq2SeqTrainer`는 자동으로 체크포인트를 저장하는 기능을 내장하고 있습니다. 하지만 `Ignite`를 사용하여 커스터마이징된 체크포인트 저장 기능은 포함되어 있지 않습니다. `Seq2SeqTrainer`가 관리하는 기본 체크포인트 저장 기능에 대해 설명한 후, `Ignite`에서 추가적으로 체크포인트를 관리하는 방법을 소개하겠습니다.
 
-#### 1. Seq2SeqTrainer의 체크포인트 관리
+#### 2.8.1. Seq2SeqTrainer의 체크포인트 관리
 
 `Seq2SeqTrainer`는 `training_args`를 통해 체크포인트를 자동으로 저장합니다. 아래 설정들이 중요한 역할을 합니다:
 
@@ -548,15 +633,15 @@ training_args = Seq2SeqTrainingArguments(
 
 `config-plm-ignite.yaml` 파일을 확인합니다. 이제 수행해야 할 작업에 대해 알려드리겠습니다. 만약 `inference-plm-summarization-ignite.py`나 `training-plm-summarization-ignite.py`에서 문제가 발생했거나 추가 작업이 필요하다면, 다음 단계를 수행할 수 있습니다.
 
-### Stage server에서 실험 진행 순서
+### 2.9. Stage server에서 실험 진행 순서
 
-#### 체크포인트 경로 확인
+#### 2.9.1. 체크포인트 경로 확인
 
 먼저 `config-plm-ignite.yaml` 파일에서 지정된 체크포인트 경로가 올바른지 확인하세요. 경로가 잘못되었거나 파일이 누락되었을 경우, 모델 로딩 단계에서 오류가 발생할 수 있습니다.
 
 - `inference.ckt_path` 항목이 `./checkpoints/summarization.hft.kobart.run.02`로 설정되어 있습니다. 이 경로에 실제 체크포인트 파일이 존재하는지 확인하세요. 일반적으로 체크포인트 파일은 `pytorch_model.bin`이나 `.h5` 등의 파일 형식을 가집니다.
 
-####  모델 로딩 오류 해결
+#### 2.9.2. 모델 로딩 오류 해결
 
 오류(`HFValidationError`)는 올바른 경로와 파일을 가리키지 않을 때 발생합니다. 
 
@@ -565,7 +650,7 @@ training_args = Seq2SeqTrainingArguments(
   ckt_path: ./checkpoints/summarization.hft.kobart.run.02/checkpoint-epoch-1
   ```
 
-#### Lightening 기반 학습 및 추론 진행
+#### 2.9.3. Lightening 기반 학습 및 추론 진행
 
 이제 모델 학습과 추론을 시도할 수 있습니다. 만약 Ignite 기반의 스크립트를 사용하는 경우 다음 단계를 따라 수행합니다.
 
@@ -581,7 +666,7 @@ training_args = Seq2SeqTrainingArguments(
    python inference-plm-summarization-lightening.py --config config.yaml
    ```
 
-#### Ignite 기반 학습 및 추론 진행
+#### 2.9.4. Ignite 기반 학습 및 추론 진행
 
 이제 모델 학습과 추론을 시도할 수 있습니다. 만약 Ignite 기반의 스크립트를 사용하는 경우 다음 단계를 따라 수행합니다.
 
@@ -597,7 +682,7 @@ training_args = Seq2SeqTrainingArguments(
    python inference-plm-summarization-ignite.py --config config-plm-ignite.yaml
    ```
 
-#### 결과 확인 및 로깅
+#### 2.9.5. 결과 확인 및 로깅
 
 학습과 추론 결과는 각각 `./logs`와 `./prediction/` 디렉토리에 저장됩니다. 또한, `wandb`를 사용하고 있으므로 학습 과정과 결과가 `wandb` 대시보드에도 기록됩니다.
 
@@ -607,15 +692,17 @@ training_args = Seq2SeqTrainingArguments(
 2. **결과 파일 확인**:
    `./prediction/` 디렉토리에서 생성된 요약 결과 파일을 확인하여 모델이 제대로 작동하는지 검토하세요.
 
-#### 성능 평가 및 튜닝
+#### 2.9.6. 성능 평가 및 튜닝
 
 모델 성능이 기대에 미치지 못한다면 `config.yaml` 나 `config-plm-ignite.yaml`의 하이퍼파라미터를 조정하거나, 추가 데이터로 모델을 재학습시키는 등의 튜닝 작업을 수행할 수 있습니다.
 
 - **학습률 조정**: `learning_rate` 값을 조정해보세요.
-- **에폭 수 조정**: `num_train_epochs`를 늘리거나 줄여서 모델의 과적합 또는 과소적합을 방지하세요.
+- **에폭 수 조정**: `num_train_epochs`를 늘리거나 줄여서 모델의 과적합 또는 과소적합을
+
+ 방지하세요.
 - **배치 크기 조정**: `per_device_train_batch_size`와 `per_device_eval_batch_size`를 조정하여 학습 속도와 메모리 사용량의 균형을 맞추세요.
 
-#### 요약
+#### 2.9.7. 요약
 
 1. `config.yaml` 나 `config-plm-ignite.yaml` 파일의 경로가 올바르게 설정되었는지 확인하세요.
 2. 학습 및 추론 파이썬스크립트(.py)를 실행하여 모델을 학습시키고 테스트하세요.
@@ -623,20 +710,20 @@ training_args = Seq2SeqTrainingArguments(
 
 이제 문제를 해결하고 원하는 작업을 수행할 준비가 되셨습니다.
 
-### Early Stopping 관련
+### 2.10. Early Stopping 관련
 
 **Early Stopping**이 설정된 경우 전체 `epoch` 수가 20으로 지정되어 있어도, 모델의 학습이 중간에 끝날 수 있습니다. 이는 Early Stopping의 목적과 동작 원리에 따른 것입니다.
 
-#### Early Stopping의 동작 원리
+#### 2.10.1. Early Stopping의 동작 원리
 
 **Early Stopping**은 모델의 학습 중에 검증 데이터셋에서 성능이 더 이상 개선되지 않을 때 학습을 조기 종료하는 기법입니다. 이를 통해 과적합(overfitting)을 방지하고, 불필요한 학습 시간을 줄일 수 있습니다.
 
-##### 주요 매개변수:
+##### 2.10.1.1. 주요 매개변수:
 - **patience**: 성능이 개선되지 않는 연속된 `epoch` 수. 예를 들어 `patience=3`이면, 모델 성능이 3번의 연속된 `epoch` 동안 개선되지 않으면 학습을 중단합니다.
 - **monitor**: 개선 여부를 판단하는 기준 지표(예: `validation loss`).
 - **min_delta**: 성능 개선을 판단할 때 사용하는 최소 변화 값. 이 값보다 작으면 개선되지 않은 것으로 간주합니다.
 
-#### Early Stopping이 동작하는 예시
+#### 2.10.2. Early Stopping이 동작하는 예시
 
 1. **설정**: 
    - `epoch=20`
@@ -651,15 +738,15 @@ training_args = Seq2SeqTrainingArguments(
 3. **Early Stopping 작동**:
    - 14번째 `epoch`까지 개선이 없었으므로, `patience=3`에 따라 학습이 조기 종료됨.
 
-#### Early Stopping 결론
+#### 2.10.3. Early Stopping 결론
 
 따라서, Early Stopping을 사용하면 전체 `epoch` 수가 지정되어 있더라도, 지정된 `patience`에 따라 학습이 중간에 종료될 수 있습니다. 이는 모델이 더 이상 학습할 필요가 없다고 판단될 때 학습을 중단하여, 자원의 낭비를 줄이고 과적합을 방지하는 데 유용합니다.
 
-### Ignite를 활용한 커스마이징 범위 정리
+### 2.11. Ignite를 활용한 커스마이징 범위 정리
 
 이 코드에서 `ignite`를 사용하여 학습 과정과 평가 과정을 커스터마이징한 부분을 아래와 같이 설명할 수 있습니다. 특히 `ignite`의 `Engine`과 이벤트 시스템을 활용하여 학습과 평가의 각 단계를 제어하고 있습니다.
 
-#### 1. **`ignite_trainer`와 `ignite_evaluator` 커스터마이징:**
+#### 2.11.1. `ignite_trainer`와 `ignite_evaluator` 커스터마이징:
 
 ```python
 # Ignite engine for training and evaluation
@@ -676,11 +763,11 @@ ignite_evaluator = Engine(evaluation_step)
 - **`update_engine`**: `ignite_trainer`의 `Engine`에서 사용되며, 매 `iteration`마다 `trainer.prediction_step`을 호출하여 학습 배치를 처리합니다.
 - **`evaluation_step`**: `ignite_evaluator`의 `Engine`에서 사용되며, 매 `iteration`마다 `trainer.prediction_step`을 호출하여 평가 배치를 처리합니다.
 
-#### 2. 이벤트 핸들러를 통한 커스터마이징
+#### 2.11.2. 이벤트 핸들러를 통한 커스터마이징
 
 `ignite`의 이벤트 시스템을 활용하여 학습 과정 중 특정 이벤트에서 커스터마이징된 로직을 실행합니다.
 
-##### 2.1 에포크 완료 시 로직 (`EPOCH_COMPLETED` 이벤트)
+##### 2.11.2.1. 에포크 완료 시 로직 (`EPOCH_COMPLETED` 이벤트)
 
 ```python
 @ignite_trainer.on(Events.EPOCH_COMPLETED)
@@ -703,7 +790,7 @@ def log_training_loss(engine):
   - 에포크가 끝날 때마다 학습 손실과 검증 손실을 로깅합니다.
   - 검증 손실이 개선된 경우에만 체크포인트를 저장합니다.
 
-##### 2.2 `iteration` 완료 시 로직 (`ITERATION_COMPLETED` 이벤트)
+##### 2.11.2.2. `iteration` 완료 시 로직 (`ITERATION_COMPLETED` 이벤트)
 
 ```python
 # Monitor learning rate
@@ -724,7 +811,7 @@ def log_gradients(engine):
 - **`ITERATION_COMPLETED` 이벤트 핸들러**:
   - 각 `iteration`이 완료될 때마다 현재 러닝 레이트와 각 레이어의 그래디언트 크기를 로깅합니다.
 
-##### 2.3 평가 완료 시 로직 (`COMPLETED` 이벤트)
+##### 2.11.2.3. 평가 완료 시 로직 (`COMPLETED` 이벤트)
 
 ```python
 @ignite_evaluator.on(Events.COMPLETED)
@@ -748,24 +835,25 @@ def compute_rouge(engine):
 - **`COMPLETED` 이벤트 핸들러**:
   - 평가가 완료되면, `ROUGE` 점수를 계산하여 로깅합니다.
 
-#### Ignite를 활용한 커스마이징 요약:
+#### 2.11.3. Ignite를 활용한 커스마이징 요약:
 
 - **학습 및 평가 루프**는 `ignite`의 `Engine`을 사용하여 정의되었고, `ignite_trainer`와 `ignite_evaluator`로 나뉘어 각각 학습과 평가를 수행합니다.
 - **이벤트 핸들러**를 사용하여 각 에포크 및 `iteration`의 끝에서 로깅과 체크포인트 저장 등의 작업을 커스터마이징하고 있습니다.
 
 이러한 방식으로 `ignite`를 사용하면 학습 과정의 여러 측면을 세밀하게 제어할 수 있으며, `transformers`의 `Seq2SeqTrainer`와 결합하여 더욱 유연한 학습 관리가 가능합니다.
 
-
-### Hugging Faces Transformers 가 제공하는 Seq2SeqTrainer 커스마징 범위
+### 2.12. Hugging Faces Transformers 가 제공하는 Seq2SeqTrainer 커스마징 범위
 
 `Seq2SeqTrainer` 대신 `ignite`를 사용하여 학습 과정을 직접 커스터마이징하는 것은 가능합니다. 이렇게 하면 학습 과정의 모든 세부 사항을 제어할 수 있습니다. 아래는 `Seq2SeqTrainer`를 사용하지 않고 `ignite`를 통해 학습 과정을 커스터마이징하는 방법을 보여주는 코드 예제입니다.
 
-#### 1. 필요한 모듈 불러오기
+#### 2.12.1. 필요한 모듈 불러오기
 
 먼저 필요한 모듈들을 불러옵니다.
 
 ```python
 import os
+
+
 import yaml
 import torch
 import wandb
@@ -780,7 +868,7 @@ from chat_summarization.dataset import Preprocess, prepare_train_dataset, comput
 from datasets import load_metric
 ```
 
-#### 2. 모델 및 데이터 로드
+#### 2.12.2. 모델 및 데이터 로드
 
 모델과 데이터를 불러오는 함수들을 정의합니다.
 
@@ -809,7 +897,7 @@ def prepare_optimizer_and_scheduler(model, config, train_loader):
     return optimizer, lr_scheduler
 ```
 
-#### 3. Ignite 기반 학습 및 평가 루프 구현
+#### 2.12.3. Ignite 기반 학습 및 평가 루프 구현
 
 `ignite`를 사용하여 학습 및 평가 루프를 정의합니다.
 
@@ -849,7 +937,7 @@ def inference_step(engine, batch):
     return generated_ids, batch['labels']
 ```
 
-#### 4. 학습 과정 설정
+#### 2.12.4. 학습 과정 설정
 
 `ignite`의 `Engine`을 사용하여 학습 엔진과 평가 엔진을 설정하고, 필요한 핸들러를 추가합니다.
 
@@ -918,7 +1006,7 @@ if __name__ == "__main__":
     main(config)
 ```
 
-#### 5. 핵심 커스터마이징 사항
+#### 2.12.5. 핵심 커스터마이징 사항
 
 - **학습 루프**: `ignite`의 `Engine`을 통해 직접 정의되었습니다. `train_step`, `eval_step`, `inference_step`을 각각 학습, 평가, 예측 단계로 사용합니다.
 - **최적화**: `AdamW` 옵티마이저와 학습률 스케줄러를 수동으로 설정했습니다.
@@ -926,4 +1014,3 @@ if __name__ == "__main__":
 - **로깅**: `wandb`를 사용하여 에포크별 손실 및 성능 지표를 로깅합니다.
 
 이러한 접근 방식은 `Seq2SeqTrainer`의 추상화를 사용하지 않고, 전체 학습 과정을 직접 제어할 수 있게 해줍니다. 이 방식은 학습 과정의 모든 측면을 커스터마이징할 수 있는 유연성을 제공합니다.
-
