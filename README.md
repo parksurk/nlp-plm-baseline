@@ -254,6 +254,7 @@ CNNClassifier(
 
 ### 패키지 설치
 
+```bash
 pip install torch torchvision torchaudio
 pip install torch_optimizer
 pip install pytorch-ignite
@@ -264,7 +265,7 @@ pip install absl-py
 pip install datesets
 pip install nltk
 pip install rouge-score
-
+```
 
 ### 설정 파일(config.yaml)
 `config.yaml` 파일은 모델 학습 및 추론을 위한 설정 파일로 보입니다. 설정 파일의 각 섹션이 의미하는 바를 간단히 설명하겠습니다.
@@ -513,7 +514,8 @@ Ignite를 사용하여 트레이닝 루프를 작성하고, 특히 `ignite.engin
 
 현재 제공된 코드는 `Seq2SeqTrainer`를 사용하여 모델을 학습하고 있으며, `Seq2SeqTrainer`는 자동으로 체크포인트를 저장하는 기능을 내장하고 있습니다. 하지만 `Ignite`를 사용하여 커스터마이징된 체크포인트 저장 기능은 포함되어 있지 않습니다. `Seq2SeqTrainer`가 관리하는 기본 체크포인트 저장 기능에 대해 설명한 후, `Ignite`에서 추가적으로 체크포인트를 관리하는 방법을 소개하겠습니다.
 
-#### 1. **Seq2SeqTrainer의 체크포인트 관리**:
+#### 1. Seq2SeqTrainer의 체크포인트 관리
+
 `Seq2SeqTrainer`는 `training_args`를 통해 체크포인트를 자동으로 저장합니다. 아래 설정들이 중요한 역할을 합니다:
 
 - **save_strategy**: 
@@ -546,12 +548,16 @@ training_args = Seq2SeqTrainingArguments(
 
 `config-plm-ignite.yaml` 파일을 확인합니다. 이제 수행해야 할 작업에 대해 알려드리겠습니다. 만약 `inference-plm-summarization-ignite.py`나 `training-plm-summarization-ignite.py`에서 문제가 발생했거나 추가 작업이 필요하다면, 다음 단계를 수행할 수 있습니다.
 
-### **체크포인트 경로 확인**
+### Stage server에서 실험 진행 순서
+
+#### 체크포인트 경로 확인
+
 먼저 `config-plm-ignite.yaml` 파일에서 지정된 체크포인트 경로가 올바른지 확인하세요. 경로가 잘못되었거나 파일이 누락되었을 경우, 모델 로딩 단계에서 오류가 발생할 수 있습니다.
 
 - `inference.ckt_path` 항목이 `./checkpoints/summarization.hft.kobart.run.02`로 설정되어 있습니다. 이 경로에 실제 체크포인트 파일이 존재하는지 확인하세요. 일반적으로 체크포인트 파일은 `pytorch_model.bin`이나 `.h5` 등의 파일 형식을 가집니다.
 
-### 2. **모델 로딩 오류 해결**
+####  모델 로딩 오류 해결
+
 오류(`HFValidationError`)는 올바른 경로와 파일을 가리키지 않을 때 발생합니다. 
 
 - 체크포인트 경로를 실제 체크포인트 디렉토리 경로로 업데이트하십시오. 예를 들어, 체크포인트 디렉토리 이름이 `checkpoint-epoch-1`이라면:
@@ -559,7 +565,8 @@ training_args = Seq2SeqTrainingArguments(
   ckt_path: ./checkpoints/summarization.hft.kobart.run.02/checkpoint-epoch-1
   ```
 
-### **Lightening 기반 학습 및 추론 진행**
+#### Lightening 기반 학습 및 추론 진행
+
 이제 모델 학습과 추론을 시도할 수 있습니다. 만약 Ignite 기반의 스크립트를 사용하는 경우 다음 단계를 따라 수행합니다.
 
 1. **학습 스크립트 실행**:
@@ -574,7 +581,8 @@ training_args = Seq2SeqTrainingArguments(
    python inference-plm-summarization-lightening.py --config config.yaml
    ```
 
-### **Ignite 기반 학습 및 추론 진행**
+#### Ignite 기반 학습 및 추론 진행
+
 이제 모델 학습과 추론을 시도할 수 있습니다. 만약 Ignite 기반의 스크립트를 사용하는 경우 다음 단계를 따라 수행합니다.
 
 1. **학습 스크립트 실행**:
@@ -589,7 +597,8 @@ training_args = Seq2SeqTrainingArguments(
    python inference-plm-summarization-ignite.py --config config-plm-ignite.yaml
    ```
 
-### **결과 확인 및 로깅**
+#### 결과 확인 및 로깅
+
 학습과 추론 결과는 각각 `./logs`와 `./prediction/` 디렉토리에 저장됩니다. 또한, `wandb`를 사용하고 있으므로 학습 과정과 결과가 `wandb` 대시보드에도 기록됩니다.
 
 1. **WandB 설정 확인**:
@@ -598,14 +607,16 @@ training_args = Seq2SeqTrainingArguments(
 2. **결과 파일 확인**:
    `./prediction/` 디렉토리에서 생성된 요약 결과 파일을 확인하여 모델이 제대로 작동하는지 검토하세요.
 
-### **성능 평가 및 튜닝**
+#### 성능 평가 및 튜닝
+
 모델 성능이 기대에 미치지 못한다면 `config.yaml` 나 `config-plm-ignite.yaml`의 하이퍼파라미터를 조정하거나, 추가 데이터로 모델을 재학습시키는 등의 튜닝 작업을 수행할 수 있습니다.
 
 - **학습률 조정**: `learning_rate` 값을 조정해보세요.
 - **에폭 수 조정**: `num_train_epochs`를 늘리거나 줄여서 모델의 과적합 또는 과소적합을 방지하세요.
 - **배치 크기 조정**: `per_device_train_batch_size`와 `per_device_eval_batch_size`를 조정하여 학습 속도와 메모리 사용량의 균형을 맞추세요.
 
-### 요약
+#### 요약
+
 1. `config.yaml` 나 `config-plm-ignite.yaml` 파일의 경로가 올바르게 설정되었는지 확인하세요.
 2. 학습 및 추론 파이썬스크립트(.py)를 실행하여 모델을 학습시키고 테스트하세요.
 3. 결과를 `wandb`와 파일에서 확인하고, 필요한 경우 하이퍼파라미터를 조정하세요.
@@ -665,11 +676,11 @@ ignite_evaluator = Engine(evaluation_step)
 - **`update_engine`**: `ignite_trainer`의 `Engine`에서 사용되며, 매 `iteration`마다 `trainer.prediction_step`을 호출하여 학습 배치를 처리합니다.
 - **`evaluation_step`**: `ignite_evaluator`의 `Engine`에서 사용되며, 매 `iteration`마다 `trainer.prediction_step`을 호출하여 평가 배치를 처리합니다.
 
-#### 2. **이벤트 핸들러를 통한 커스터마이징:**
+#### 2. 이벤트 핸들러를 통한 커스터마이징
 
 `ignite`의 이벤트 시스템을 활용하여 학습 과정 중 특정 이벤트에서 커스터마이징된 로직을 실행합니다.
 
-##### 2.1 **에포크 완료 시 로직 (`EPOCH_COMPLETED` 이벤트):**
+##### 2.1 에포크 완료 시 로직 (`EPOCH_COMPLETED` 이벤트)
 
 ```python
 @ignite_trainer.on(Events.EPOCH_COMPLETED)
@@ -692,7 +703,7 @@ def log_training_loss(engine):
   - 에포크가 끝날 때마다 학습 손실과 검증 손실을 로깅합니다.
   - 검증 손실이 개선된 경우에만 체크포인트를 저장합니다.
 
-##### 2.2 **`iteration` 완료 시 로직 (`ITERATION_COMPLETED` 이벤트):**
+##### 2.2 `iteration` 완료 시 로직 (`ITERATION_COMPLETED` 이벤트)
 
 ```python
 # Monitor learning rate
@@ -713,7 +724,7 @@ def log_gradients(engine):
 - **`ITERATION_COMPLETED` 이벤트 핸들러**:
   - 각 `iteration`이 완료될 때마다 현재 러닝 레이트와 각 레이어의 그래디언트 크기를 로깅합니다.
 
-##### 2.3 **평가 완료 시 로직 (`COMPLETED` 이벤트):**
+##### 2.3 평가 완료 시 로직 (`COMPLETED` 이벤트)
 
 ```python
 @ignite_evaluator.on(Events.COMPLETED)
@@ -749,7 +760,7 @@ def compute_rouge(engine):
 
 `Seq2SeqTrainer` 대신 `ignite`를 사용하여 학습 과정을 직접 커스터마이징하는 것은 가능합니다. 이렇게 하면 학습 과정의 모든 세부 사항을 제어할 수 있습니다. 아래는 `Seq2SeqTrainer`를 사용하지 않고 `ignite`를 통해 학습 과정을 커스터마이징하는 방법을 보여주는 코드 예제입니다.
 
-#### 1. **필요한 모듈 불러오기:**
+#### 1. 필요한 모듈 불러오기
 
 먼저 필요한 모듈들을 불러옵니다.
 
@@ -769,7 +780,7 @@ from chat_summarization.dataset import Preprocess, prepare_train_dataset, comput
 from datasets import load_metric
 ```
 
-#### 2. **모델 및 데이터 로드:**
+#### 2. 모델 및 데이터 로드
 
 모델과 데이터를 불러오는 함수들을 정의합니다.
 
@@ -798,7 +809,7 @@ def prepare_optimizer_and_scheduler(model, config, train_loader):
     return optimizer, lr_scheduler
 ```
 
-#### 3. **Ignite 기반 학습 및 평가 루프 구현:**
+#### 3. Ignite 기반 학습 및 평가 루프 구현
 
 `ignite`를 사용하여 학습 및 평가 루프를 정의합니다.
 
@@ -838,7 +849,7 @@ def inference_step(engine, batch):
     return generated_ids, batch['labels']
 ```
 
-#### 4. **학습 과정 설정:**
+#### 4. 학습 과정 설정
 
 `ignite`의 `Engine`을 사용하여 학습 엔진과 평가 엔진을 설정하고, 필요한 핸들러를 추가합니다.
 
@@ -907,7 +918,7 @@ if __name__ == "__main__":
     main(config)
 ```
 
-#### 5. **핵심 커스터마이징 사항:**
+#### 5. 핵심 커스터마이징 사항
 
 - **학습 루프**: `ignite`의 `Engine`을 통해 직접 정의되었습니다. `train_step`, `eval_step`, `inference_step`을 각각 학습, 평가, 예측 단계로 사용합니다.
 - **최적화**: `AdamW` 옵티마이저와 학습률 스케줄러를 수동으로 설정했습니다.
