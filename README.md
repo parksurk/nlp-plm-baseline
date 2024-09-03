@@ -37,11 +37,14 @@
     - 2.4. 소스 및 디렉토리 구조
         - 2.4.1. Lightening 기반 학습/예측 관련 소스 
         - 2.4.2. Ingite 기반 학습/예측 관련 소스 
+        - 2.4.3. Seq2SeqTrainer를 사용하지 않는 Ingite 기반 학습/예측 관련 소스 
     - 2.5. 학습 테스트 관련 커맨드 라인 명령어
         - 2.5.1. Lightening 기반 학습
         - 2.5.2. Lightening 기반 예측
         - 2.5.3. Ignite 기반 학습
         - 2.5.4. Ignite 기반 예측
+        - 2.5.5. Seq2SeqTrainer를 사용하지 않는 Ignite 기반 학습
+        - 2.5.6. Seq2SeqTrainer를 사용하지 않는 Ignite 기반 예측
     - 2.6. Lightening 대신 Ignite 적용 관련
         - 2.6.1. 학습 소스 변경
             - 2.6.1.1. 주요 변경 사항 설명
@@ -80,6 +83,13 @@
         - 2.12.3. Ignite 기반 학습 및 평가 루프 구현
         - 2.12.4. 학습 과정 설정
         - 2.12.5. 핵심 커스터마이징 사항
+    - 2.13. Hugging Faces Transformers 가 제공하는 Seq2SeqTrainer 없이 커스터마이지이 하기
+        - 2.13.1. 모델과 토크나이저 로드
+        - 2.13.2. 훈련 및 평가 엔진 생성
+        - 2.13.3. 훈련 루프 및 체크포인트 저장
+        - 2.13.4. 평가 및 ROUGE 점수 계산
+        - 2.13.5. 학습 시작
+        - 2.13.6. 요약
 
 <!-- /TOC -->
 
@@ -348,6 +358,7 @@ pip install absl-py
 pip install datesets
 pip install nltk
 pip install rouge-score
+pip install evaluate
 ```
 
 ### 2.2. 설정 파일(config.yaml)
@@ -456,6 +467,7 @@ pip install rouge-score
 
 #### 2.4.1. Lightening 기반 학습/예측 관련 소스 
 
+```plaintext
 project_root/
 │
 ├── config.yaml
@@ -463,9 +475,11 @@ project_root/
 ├── inference-plm-summarization-lightening.py
 └── chat_summarization/
     └── dataset.py
+```
 
 #### 2.4.2. Ingite 기반 학습/예측 관련 소스 
 
+```plaintext
 project_root/
 │
 ├── config-plm-ignite.yaml
@@ -473,6 +487,19 @@ project_root/
 ├── inference-plm-summarization-ignite.py
 └── chat_summarization/
     └── dataset.py
+```
+
+#### 2.4.3. Seq2SeqTrainer를 사용하지 않는 Ingite 기반 학습/예측 관련 소스 
+
+```plaintext
+project_root/
+│
+├── config-plm-ignite.yaml
+├── training-plm-summarization-ignite-withoutSeq2SeqTrainer.py
+├── inference-plm-summarization-ignite-withoutSeq2SeqTrainer.py
+└── chat_summarization/
+    └── dataset.py
+```
 
 ### 2.5. 학습 테스트 관련 커맨드 라인 명령어
 
@@ -498,6 +525,18 @@ python training-plm-summarization-ignite.py --config config-plm-ignite.yaml
 
 ```bash
 python inference-plm-summarization-ignite.py --config config-plm-ignite.yaml
+```
+
+#### 2.5.5. Seq2SeqTrainer를 사용하지 않는 Ignite 기반 학습
+
+```bash
+python training-plm-summarization-ignite-withoutSeq2SeqTrainer.py --config config-plm-ignite.yaml
+```
+
+#### 2.5.6. Seq2SeqTrainer를 사용하지 않는 Ignite 기반 예측
+
+```bash
+python inference-plm-summarization-ignite-withoutSeq2SeqTrainer.py --config config-plm-ignite.yaml
 ```
 
 ### 2.6. Lightening 대신 Ignite 적용 관련
@@ -1014,3 +1053,122 @@ if __name__ == "__main__":
 - **로깅**: `wandb`를 사용하여 에포크별 손실 및 성능 지표를 로깅합니다.
 
 이러한 접근 방식은 `Seq2SeqTrainer`의 추상화를 사용하지 않고, 전체 학습 과정을 직접 제어할 수 있게 해줍니다. 이 방식은 학습 과정의 모든 측면을 커스터마이징할 수 있는 유연성을 제공합니다.
+
+### 2.13. Hugging Faces Transformers 가 제공하는 Seq2SeqTrainer 없이 커스터마이지이 하기
+
+`Seq2SeqTrainer`를 사용하지 않는 학습 소스에서는, 모델의 훈련과 평가 과정을 직접 정의하고 제어해야 합니다. `Seq2SeqTrainer`는 Hugging Face의 트랜스포머 라이브러리에서 제공하는 고수준 API로, 텍스트 요약과 같은 시퀀스-투-시퀀스(seq2seq) 작업을 쉽게 수행할 수 있도록 해줍니다. 그러나 이 클래스를 사용하지 않고 학습을 구현할 때는, 모델의 훈련과 평가를 수동으로 관리해야 합니다. 
+
+아래는 `Seq2SeqTrainer`를 사용하지 않는 학습 소스의 주요 구성 요소와 그 의미를 설명한 내용입니다.
+
+#### 2.13.1. 모델과 토크나이저 로드
+
+```python
+def load_tokenizer_and_model_for_train(config, device):
+    model_name = config['general']['model_name']
+    bart_config = BartConfig.from_pretrained(model_name)
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    generate_model = BartForConditionalGeneration.from_pretrained(config['general']['model_name'], config=bart_config)
+
+    special_tokens_dict = {'additional_special_tokens': config['tokenizer']['special_tokens']}
+    tokenizer.add_special_tokens(special_tokens_dict)
+    generate_model.resize_token_embeddings(len(tokenizer))
+    generate_model.to(device)
+
+    return generate_model, tokenizer
+```
+- **설명**: 이 함수는 주어진 구성 파일(`config`)에서 모델 이름과 디바이스 정보를 읽어와, 토크나이저와 BART 모델을 로드하고, 특수 토큰을 추가한 뒤, 모델을 GPU로 이동시킵니다.
+
+#### 2.13.2. 훈련 및 평가 엔진 생성
+
+```python
+def create_trainer_and_evaluator(config, generate_model, tokenizer, optimizer, device):
+    def update_engine(engine, batch):
+        generate_model.train()
+        inputs = {k: v.to(device) for k, v in batch.items()}
+        outputs = generate_model(**inputs)
+        loss = outputs.loss
+        loss.backward()
+
+        optimizer.step()
+        optimizer.zero_grad()
+
+        return loss.item()
+
+    def evaluation_step(engine, batch):
+        generate_model.eval()
+        with torch.no_grad():
+            inputs = {k: v.to(device) for k, v in batch.items()}
+            outputs = generate_model(**inputs)
+            loss = outputs.loss
+            predictions = outputs.logits.argmax(dim=-1)
+            references = inputs['labels']
+        return loss.item(), predictions, references
+
+    trainer = Engine(update_engine)
+    evaluator = Engine(evaluation_step)
+
+    RunningAverage(output_transform=lambda x: x).attach(trainer, 'training_loss')
+    RunningAverage(output_transform=lambda x: x[0]).attach(evaluator, 'validation_loss')
+
+    return trainer, evaluator
+```
+- **설명**: 이 함수는 `Ignite` 라이브러리를 사용하여 훈련과 평가를 위한 엔진을 생성합니다.
+  - **훈련 엔진 (trainer)**: 각 배치에 대해 모델의 순전파와 역전파를 수행하고, 옵티마이저를 통해 파라미터를 업데이트합니다.
+  - **평가 엔진 (evaluator)**: 모델을 평가 모드로 전환한 후, 평가 데이터셋에서 손실과 예측값을 계산합니다.
+  - **`RunningAverage`**: 손실의 이동 평균을 계산해 훈련 및 평가 과정에서 로깅합니다.
+
+#### 2.13.3. 훈련 루프 및 체크포인트 저장
+
+```python
+@trainer.on(Events.EPOCH_COMPLETED)
+def log_training_loss(engine):
+    global best_val_loss
+    epoch = engine.state.epoch
+    wandb.log({'epoch': epoch, 'training_loss': engine.state.metrics['training_loss']})
+
+    # Run evaluation
+    evaluator.run(val_loader)
+    val_loss = evaluator.state.metrics['validation_loss']
+    wandb.log({'epoch': epoch, 'validation_loss': val_loss})
+
+    # Save checkpoint if the validation loss has improved
+    if val_loss < best_val_loss:
+        best_val_loss = val_loss
+        checkpoint_dir = os.path.join(config['general']['output_dir'], f"checkpoint-epoch-{epoch}")
+        os.makedirs(checkpoint_dir, exist_ok=True)
+        generate_model.save_pretrained(checkpoint_dir)
+        tokenizer.save_pretrained(checkpoint_dir)
+        torch.save(optimizer.state_dict(), os.path.join(checkpoint_dir, 'optimizer.pt'))
+```
+- **설명**: 이 코드에서는 각 에포크가 끝날 때마다 훈련 손실을 로그로 남기고, 검증을 실행한 후 검증 손실이 향상되었는지 확인합니다. 검증 손실이 향상된 경우에만 모델 체크포인트를 저장합니다.
+
+#### 2.13.4. 평가 및 ROUGE 점수 계산
+
+```python
+@evaluator.on(Events.COMPLETED)
+def compute_rouge(engine):
+    predictions = engine.state.output[1]
+    references = engine.state.output[2]
+
+    if predictions is not None and references is not None:
+        decoded_preds = [tokenizer.decode(g, skip_special_tokens=True) for g in predictions]
+        decoded_refs = [tokenizer.decode(l, skip_special_tokens=True) for l in references]
+
+        rouge_scores = rouge.compute(predictions=decoded_preds, references=decoded_refs)
+        wandb.log({'rouge1': rouge_scores['rouge1'].mid.fmeasure,
+                   'rouge2': rouge_scores['rouge2'].mid.fmeasure,
+                   'rougeL': rouge_scores['rougeL'].mid.fmeasure,
+                   'epoch': engine.state.epoch})
+```
+- **설명**: 평가가 완료될 때마다 ROUGE 점수를 계산하여 성능을 측정하고, 그 결과를 로그로 남깁니다.
+
+#### 2.13.5. 학습 시작
+
+```python
+trainer.run(train_loader, max_epochs=config['training']['num_train_epochs'])
+```
+- **설명**: 학습을 시작하며, 주어진 에포크 수만큼 모델을 학습시킵니다.
+
+#### 2.13.6. 요약
+
+`Seq2SeqTrainer`를 사용하지 않는 학습 소스에서는 모델 학습 과정의 세부 사항을 수동으로 제어할 수 있는 유연성이 있습니다. 이를 통해 더 복잡한 커스터마이징이나 특정 요구사항에 맞는 설정을 직접 구현할 수 있습니다. 하지만, 이는 코드의 복잡도를 높이며, 훈련, 평가, 체크포인트 저장 등과 같은 작업을 수동으로 구현해야 한다는 부담이 있습니다.
