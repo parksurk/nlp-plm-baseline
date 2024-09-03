@@ -58,13 +58,14 @@
     - 2.8. Ignite로 변환된 소스에 체크포인트 관련 추가 코딩 
         - 2.8.1. Seq2SeqTrainer의 체크포인트 관리
     - 2.9. Stage server에서 실험 진행 순서
-        - 2.9.1. 체크포인트 경로 확인
-        - 2.9.2. 모델 로딩 오류 해결
-        - 2.9.3. Lightening 기반 학습 및 추론 진행
-        - 2.9.4. Ignite 기반 학습 및 추론 진행
-        - 2.9.5. 결과 확인 및 로깅
-        - 2.9.6. 성능 평가 및 튜닝
-        - 2.9.7. 요약
+        - 2.9.1. Stage server 디렉토리 구조
+        - 2.9.2. 체크포인트 경로 확인
+        - 2.9.3. 모델 로딩 오류 해결
+        - 2.9.4. Lightening 기반 학습 및 추론 진행
+        - 2.9.5. Ignite 기반 학습 및 추론 진행
+        - 2.9.6. 결과 확인 및 로깅
+        - 2.9.7. 성능 평가 및 튜닝
+        - 2.9.8. 요약
     - 2.10. Early Stopping 관련
         - 2.10.1. Early Stopping의 동작 원리
             - 2.10.1.1. 주요 매개변수:
@@ -674,13 +675,150 @@ training_args = Seq2SeqTrainingArguments(
 
 ### 2.9. Stage server에서 실험 진행 순서
 
-#### 2.9.1. 체크포인트 경로 확인
+#### 2.9.1. Stage server 디렉토리 구조
+
+```plaintext
+├── code
+│   ├── baseline.ipynb
+│   ├── config.yaml
+│   └── requirements.txt
+├── data
+│   ├── dev.csv
+│   ├── sample_submission.csv
+│   ├── test.csv
+│   └── train.csv
+├── nlp-plm-baseline
+│   ├── .gitignore
+│   ├── LICENSE
+│   ├── README.md
+│   ├── chat_summarization
+│   │   └── dataset.py
+│   ├── checkpoints
+│   │   └── readme.checkpoints.md
+│   ├── classify.py
+│   ├── classify_plm.py
+│   ├── config-plm-ignite.yaml
+│   ├── config.yaml
+│   ├── data
+│   │   ├── review.sorted.uniq.refined.shuf.test.tsv
+│   │   ├── review.sorted.uniq.refined.shuf.train.tsv
+│   │   ├── review.sorted.uniq.refined.shuf.tsv
+│   │   └── review.sorted.uniq.refined.tsv
+│   ├── finetune_plm_hftrainer.py
+│   ├── finetune_plm_native.py
+│   ├── get_confusion_matrix.py
+│   ├── inference-plm-summarization-ignite-withoutSeq2SeqTrainer.py
+│   ├── inference-plm-summarization-ignite.py
+│   ├── inference-plm-summarization-lightening.py
+│   ├── make_config.py
+│   ├── make_config_hftrainer.py
+│   ├── models
+│   │   ├── readme.models.md
+│   │   ├── review.native.kcbert.pth
+│   │   └── review.native.kcbert.pth.result.txt
+│   ├── nlp-plm-ntc-config-hftrainer.xml
+│   ├── nlp-plm-ntc-config.xml
+│   ├── simple_ntc
+│   │   ├── __init__.py
+│   │   ├── bert_dataset.py
+│   │   ├── bert_trainer.py
+│   │   ├── data_loader.py
+│   │   ├── models
+│   │   │   ├── cnn.py
+│   │   │   └── rnn.py
+│   │   ├── trainer.py
+│   │   └── utils.py
+│   ├── train.py
+│   ├── training-plm-summarization-ignite-withoutSeq2SeqTrainer.py
+│   ├── training-plm-summarization-ignite.py
+│   ├── training-plm-summarization-lightening.py
+│   └── wandb
+```
+
+```plaintext
+└── upstage-nlp-summarization-nlp5
+    ├── .gitignore
+    ├── README.md
+    ├── code
+    │   ├── team
+    │   │   ├── nlp-plm-baseline
+    │   │   │   ├── .DS_Store
+    │   │   │   ├── .gitignore
+    │   │   │   ├── LICENSE
+    │   │   │   ├── README.md
+    │   │   │   ├── chat_summarization
+    │   │   │   │   └── dataset.py
+    │   │   │   ├── checkpoints
+    │   │   │   │   └── readme.checkpoints.md
+    │   │   │   ├── classify.py
+    │   │   │   ├── classify_plm.py
+    │   │   │   ├── config-plm-ignite.yaml
+    │   │   │   ├── config.yaml
+    │   │   │   ├── data
+    │   │   │   │   ├── review.sorted.uniq.refined.shuf.test.tsv
+    │   │   │   │   ├── review.sorted.uniq.refined.shuf.train.tsv
+    │   │   │   │   ├── review.sorted.uniq.refined.shuf.tsv
+    │   │   │   │   └── review.sorted.uniq.refined.tsv
+    │   │   │   ├── finetune_plm_hftrainer.py
+    │   │   │   ├── finetune_plm_native.py
+    │   │   │   ├── get_confusion_matrix.py
+    │   │   │   ├── inference-plm-summarization-ignite-withoutSeq2SeqTrainer.py
+    │   │   │   ├── inference-plm-summarization-ignite.py
+    │   │   │   ├── inference-plm-summarization-lightening.py
+    │   │   │   ├── make_config.py
+    │   │   │   ├── make_config_hftrainer.py
+    │   │   │   ├── models
+    │   │   │   │   ├── readme.models.md
+    │   │   │   │   └── review.native.kcbert.pth.result.txt
+    │   │   │   ├── nlp-plm-ntc-config-hftrainer.xml
+    │   │   │   ├── nlp-plm-ntc-config.xml
+    │   │   │   ├── simple_ntc
+    │   │   │   │   ├── __init__.py
+    │   │   │   │   ├── bert_dataset.py
+    │   │   │   │   ├── bert_trainer.py
+    │   │   │   │   ├── data_loader.py
+    │   │   │   │   ├── models
+    │   │   │   │   │   ├── cnn.py
+    │   │   │   │   │   └── rnn.py
+    │   │   │   │   ├── trainer.py
+    │   │   │   │   └── utils.py
+    │   │   │   ├── train.py
+    │   │   │   ├── training-plm-summarization-ignite-withoutSeq2SeqTrainer.py
+    │   │   │   ├── training-plm-summarization-ignite.py
+    │   │   │   └── training-plm-summarization-lightening.py
+    │   │   └── readme.team.md
+    │   ├── tm1
+    │   │   └── readme.tm1.md
+    │   ├── tm2
+    │   │   └── readme.tm2.md
+    │   ├── tm3
+    │   │   └── readme.tm3.md
+    │   └── tm4
+    │       └── readme.tm4.md
+    ├── docs
+    │   ├── .DS_Store
+    │   ├── presentation
+    │   │   ├── .DS_Store
+    │   │   └── readme.presentation.md
+    │   └── reference
+    │       ├── .DS_Store
+    │       └── readme.reference.md
+    └── images
+        ├── .DS_Store
+        ├── readme.images.md
+        ├── team-member-har.png
+        ├── team-member-pkt.png
+        ├── team-member-ps.png
+        └── team-member-why.png
+```
+
+#### 2.9.2. 체크포인트 경로 확인
 
 먼저 `config-plm-ignite.yaml` 파일에서 지정된 체크포인트 경로가 올바른지 확인하세요. 경로가 잘못되었거나 파일이 누락되었을 경우, 모델 로딩 단계에서 오류가 발생할 수 있습니다.
 
 - `inference.ckt_path` 항목이 `./checkpoints/summarization.hft.kobart.run.02`로 설정되어 있습니다. 이 경로에 실제 체크포인트 파일이 존재하는지 확인하세요. 일반적으로 체크포인트 파일은 `pytorch_model.bin`이나 `.h5` 등의 파일 형식을 가집니다.
 
-#### 2.9.2. 모델 로딩 오류 해결
+#### 2.9.3. 모델 로딩 오류 해결
 
 오류(`HFValidationError`)는 올바른 경로와 파일을 가리키지 않을 때 발생합니다. 
 
@@ -689,7 +827,7 @@ training_args = Seq2SeqTrainingArguments(
   ckt_path: ./checkpoints/summarization.hft.kobart.run.02/checkpoint-epoch-1
   ```
 
-#### 2.9.3. Lightening 기반 학습 및 추론 진행
+#### 2.9.4. Lightening 기반 학습 및 추론 진행
 
 이제 모델 학습과 추론을 시도할 수 있습니다. 만약 Ignite 기반의 스크립트를 사용하는 경우 다음 단계를 따라 수행합니다.
 
@@ -705,7 +843,7 @@ training_args = Seq2SeqTrainingArguments(
    python inference-plm-summarization-lightening.py --config config.yaml
    ```
 
-#### 2.9.4. Ignite 기반 학습 및 추론 진행
+#### 2.9.5. Ignite 기반 학습 및 추론 진행
 
 이제 모델 학습과 추론을 시도할 수 있습니다. 만약 Ignite 기반의 스크립트를 사용하는 경우 다음 단계를 따라 수행합니다.
 
@@ -721,7 +859,7 @@ training_args = Seq2SeqTrainingArguments(
    python inference-plm-summarization-ignite.py --config config-plm-ignite.yaml
    ```
 
-#### 2.9.5. 결과 확인 및 로깅
+#### 2.9.6. 결과 확인 및 로깅
 
 학습과 추론 결과는 각각 `./logs`와 `./prediction/` 디렉토리에 저장됩니다. 또한, `wandb`를 사용하고 있으므로 학습 과정과 결과가 `wandb` 대시보드에도 기록됩니다.
 
@@ -731,7 +869,7 @@ training_args = Seq2SeqTrainingArguments(
 2. **결과 파일 확인**:
    `./prediction/` 디렉토리에서 생성된 요약 결과 파일을 확인하여 모델이 제대로 작동하는지 검토하세요.
 
-#### 2.9.6. 성능 평가 및 튜닝
+#### 2.9.7. 성능 평가 및 튜닝
 
 모델 성능이 기대에 미치지 못한다면 `config.yaml` 나 `config-plm-ignite.yaml`의 하이퍼파라미터를 조정하거나, 추가 데이터로 모델을 재학습시키는 등의 튜닝 작업을 수행할 수 있습니다.
 
@@ -741,7 +879,7 @@ training_args = Seq2SeqTrainingArguments(
  방지하세요.
 - **배치 크기 조정**: `per_device_train_batch_size`와 `per_device_eval_batch_size`를 조정하여 학습 속도와 메모리 사용량의 균형을 맞추세요.
 
-#### 2.9.7. 요약
+#### 2.9.8. 요약
 
 1. `config.yaml` 나 `config-plm-ignite.yaml` 파일의 경로가 올바르게 설정되었는지 확인하세요.
 2. 학습 및 추론 파이썬스크립트(.py)를 실행하여 모델을 학습시키고 테스트하세요.
